@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Suwa Setha AI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <button class="menu-btn">☰</button>
+        <div class="bot-icon">🤖</div>
+        <div>
+          <h1>Suwa Setha AI</h1>
+          <p>Your Healthcare Assistant</p>
+        </div>
+      </div>
+      <div class="language-switcher">🌐</div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+      <!-- Side Menu -->
+      <aside class="side-menu">
+        <h2>Quick Access</h2>
+        <button class="menu-item">
+          <h3>Common Diseases</h3>
+          <p>Learn about symptoms and treatments</p>
+        </button>
+        <button class="menu-item">
+          <h3>Medications Guide</h3>
+          <p>Information about medicines</p>
+        </button>
+        <button class="menu-item">
+          <h3>First Aid Tips</h3>
+          <p>Emergency response guidelines</p>
+        </button>
+        <button class="menu-item">
+          <h3>Health Checkups</h3>
+          <p>Schedule and information</p>
+        </button>
+      </aside>
+
+      <!-- Chat Area -->
+      <section class="chat-area">
+        <div class="messages">
+          <div class="message bot">
+            Hello! I'm Suwa Setha AI, your healthcare assistant. How can I help you today?
+          </div>
+        </div>
+
+        <!-- Quick Replies -->
+        <div class="quick-replies">
+          <p>Quick actions:</p>
+          <button class="quick-btn">💊 Ask about medication</button>
+          <button class="quick-btn">🏥 Learn first aid</button>
+          <button class="quick-btn">📋 Disease information</button>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-area">
+          <textarea placeholder="Type your health question here..."></textarea>
+          <button class="voice-btn">🎤</button>
+          <button class="send-btn">Send</button>
+        </div>
+        <p class="disclaimer">
+          This chatbot provides general health information. For emergencies, please call your local emergency services.
+        </p>
+      </section>
+    </main>
+  </div>
+
+  <!-- ✅ Chat Interaction Script -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const sendBtn = document.querySelector(".send-btn");
+      const voiceBtn = document.querySelector(".voice-btn");
+      const textarea = document.querySelector("textarea");
+      const messagesDiv = document.querySelector(".messages");
+
+      // Append message to chat
+      function appendMessage(text, sender = "user") {
+        const msgDiv = document.createElement("div");
+        msgDiv.classList.add("message", sender);
+        msgDiv.textContent = text;
+        messagesDiv.appendChild(msgDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      }
+
+      // Handle send button
+      sendBtn.addEventListener("click", async () => {
+        const msg = textarea.value.trim();
+        if (!msg) return;
+
+        appendMessage(msg, "user");
+        textarea.value = "";
+
+        // Send to Flask backend
+        const formData = new FormData();
+        formData.append("msg", msg);
+
+        try {
+          const response = await fetch("/get", {
+            method: "POST",
+            body: formData
+          });
+          const botReply = await response.text();
+          appendMessage(botReply, "bot");
+        } catch (error) {
+          appendMessage("⚠️ Error connecting to server.", "bot");
+        }
+      });
+
+      // Handle Enter key
+      textarea.addEventListener("keypress", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendBtn.click();
+        }
+      });
+
+      // Quick reply buttons
+      document.querySelectorAll(".quick-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          textarea.value = btn.textContent;
+          sendBtn.click();
+        });
+      });
+
+      // Voice button (placeholder)
+      voiceBtn.addEventListener("click", () => {
+        alert("🎤 Voice input not implemented yet!");
+      });
+    });
+  </script>
+</body>
+</html>
